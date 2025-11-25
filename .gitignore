@@ -1,0 +1,16 @@
+# Firebase credentials
+*-firebase-adminsdk-*.json
+saymorehere-firebase-adminsdk-*.json
+
+# System files
+.DS_Store
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Firebase cache
+.firebase/
