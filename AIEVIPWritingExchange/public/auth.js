@@ -43,6 +43,10 @@ async function initGoogleAuth() {
 // Handle successful Google Sign-In
 async function handleGoogleSignIn(response) {
   try {
+    // Sign in to Firebase Auth with the Google credential
+    const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+    await firebase.auth().signInWithCredential(credential);
+
     // Decode the JWT token
     const payload = parseJwt(response.credential);
 
@@ -64,6 +68,7 @@ async function handleGoogleSignIn(response) {
     };
 
     console.log('User signed in:', currentUser);
+    console.log('Firebase Auth user:', firebase.auth().currentUser);
 
     // Save to localStorage
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(currentUser));
@@ -167,9 +172,15 @@ async function restoreSession() {
 }
 
 // Sign out
-function signOut() {
+async function signOut() {
   currentUser = null;
   localStorage.removeItem(AUTH_STORAGE_KEY);
+
+  // Sign out from Firebase Auth
+  if (firebase.auth().currentUser) {
+    await firebase.auth().signOut();
+  }
+
   if (typeof google !== 'undefined' && google.accounts) {
     google.accounts.id.disableAutoSelect();
   }
