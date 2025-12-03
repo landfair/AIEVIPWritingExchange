@@ -5967,6 +5967,14 @@ It also connects well with several past papers I've found that looks into prompt
         async function submitContribution(event) {
             event.preventDefault();
 
+            // Remove 'required' from fields in hidden steps to prevent validation errors
+            const hiddenSteps = document.querySelectorAll('.contribution-step[style*="display: none"]');
+            hiddenSteps.forEach(step => {
+                step.querySelectorAll('[required]').forEach(field => {
+                    field.removeAttribute('required');
+                });
+            });
+
             // Validate summary length
             const summary = document.getElementById('summary').value;
             if (summary.length < 100) {
