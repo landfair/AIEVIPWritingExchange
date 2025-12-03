@@ -7181,6 +7181,10 @@ It also connects well with several past papers I've found that looks into prompt
                     return;
                 }
 
+                // Clear any previously loaded Firestore contributions (prevents duplicates on back/forward navigation)
+                const existingContributions = bibContainer.querySelectorAll('[data-contribution-id]');
+                existingContributions.forEach(entry => entry.remove());
+
                 // Sort by date (newest first)
                 matchingContributions.sort((a, b) => {
                     const dateA = a.data.createdAt?.toDate ? a.data.createdAt.toDate() : new Date(a.data.createdAt);
