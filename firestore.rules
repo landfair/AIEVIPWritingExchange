@@ -14,6 +14,12 @@ service cloud.firestore {
              request.auth.token.email.matches('.*@nyu.edu$');
     }
 
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'admin';
+    }
+
     // Research entries collection
     match /research_entries/{entryId} {
       // Everyone can read (anonymous and authenticated)
@@ -76,7 +82,7 @@ service cloud.firestore {
 
       // Only the author or admins can update/delete
       allow update, delete: if isAuthenticated() &&
-                               (resource.data.userEmail == request.auth.token.email);
+                               (resource.data.userEmail == request.auth.token.email || isAdmin());
     }
 
     // Default deny all other collections
