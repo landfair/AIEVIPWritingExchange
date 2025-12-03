@@ -66,6 +66,19 @@ service cloud.firestore {
       allow create, update, delete: if isNYUUser();
     }
 
+    // Contributions collection
+    match /contributions/{contributionId} {
+      // Everyone can read published contributions
+      allow read: if true;
+
+      // Authenticated users can create contributions
+      allow create: if isAuthenticated();
+
+      // Only the author or admins can update/delete
+      allow update, delete: if isAuthenticated() &&
+                               (resource.data.userEmail == request.auth.token.email);
+    }
+
     // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
