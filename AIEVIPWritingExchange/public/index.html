@@ -4632,6 +4632,128 @@ It also connects well with several past papers I've found that looks into prompt
         </div>
     </div>
 
+    <!-- Edit Contribution Modal -->
+    <div class="popup" id="edit-contribution-modal" style="display: none;">
+        <div class="popup-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <span class="close-btn" onclick="closeEditContribution()">&times;</span>
+            <h2 style="color: #57068c; margin-bottom: 20px;">Edit Research Entry</h2>
+
+            <form id="edit-contribution-form" onsubmit="saveEditedContribution(event)" style="display: grid; gap: 20px;">
+                <input type="hidden" id="edit-contribution-id">
+
+                <!-- Topic & Subtopic Selection -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Topic</label>
+                        <select id="edit-topic" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;" onchange="updateEditSubtopicOptions()">
+                            <option value="">Select Topic</option>
+                            <option value="evaluating-tools">Evaluating Tools</option>
+                            <option value="understanding-users">Understanding Users</option>
+                            <option value="assessing-impacts">Assessing Impacts</option>
+                            <option value="innovating-edtech">Innovating EdTech</option>
+                            <option value="learning-science">Learning Science</option>
+                            <option value="research-methods">Research Methods</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Subtopic</label>
+                        <select id="edit-subtopic" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                            <option value="">Select Subtopic</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bibliography Fields -->
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Title</label>
+                    <input type="text" id="edit-bib-title" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Author(s)</label>
+                    <input type="text" id="edit-bib-authors" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Year</label>
+                        <input type="text" id="edit-bib-year" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">URL</label>
+                        <input type="url" id="edit-bib-url" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Publication Type</label>
+                    <select id="edit-bib-pubtype" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;" onchange="updateEditPubTypeFields()">
+                        <option value="journal">Journal Article</option>
+                        <option value="book">Book</option>
+                        <option value="chapter">Book Chapter</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Journal Fields -->
+                <div id="edit-journal-fields" style="display: grid; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Journal Name</label>
+                        <input type="text" id="edit-bib-journal" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Volume</label>
+                            <input type="text" id="edit-bib-volume" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Issue</label>
+                            <input type="text" id="edit-bib-issue" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Pages</label>
+                            <input type="text" id="edit-bib-pages" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Fields -->
+                <div id="edit-book-fields" style="display: none; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Publisher</label>
+                        <input type="text" id="edit-bib-publisher" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Location</label>
+                        <input type="text" id="edit-bib-location" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Summary/Annotation</label>
+                    <textarea id="edit-summary" required rows="6" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif; resize: vertical;"></textarea>
+                </div>
+
+                <!-- Tags -->
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d2d2d;">Tags (comma-separated)</label>
+                    <input type="text" id="edit-tags" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                </div>
+
+                <!-- Buttons -->
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeEditContribution()" style="padding: 10px 30px; background: #666; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button type="submit" style="padding: 10px 30px; background: #57068c; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-weight: 600;">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // All the JavaScript functionality from the original site, adapted for AI in Education
         function populateTeamMembersList() {
@@ -6331,9 +6453,14 @@ It also connects well with several past papers I've found that looks into prompt
                                         <div style="margin-top: 10px;"><strong>Summary:</strong> ${data.summary?.substring(0, 150)}${data.summary?.length > 150 ? '...' : ''}</div>
                                     </div>
                                 </div>
-                                <button onclick="deleteContribution('${doc.id}')" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="openEditContribution('${doc.id}')" style="padding: 8px 16px; background: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button onclick="deleteContribution('${doc.id}')" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -6369,6 +6496,199 @@ It also connects well with several past papers I've found that looks into prompt
         // Refresh contributions list
         function refreshContributions() {
             loadContributions();
+        }
+
+        // Subtopic mapping for edit form
+        const subtopicsByTopic = {
+            'evaluating-tools': [
+                { value: 'coding', label: 'Coding' },
+                { value: 'creativity', label: 'Creativity' },
+                { value: 'detection-tools', label: 'Detection Tools' },
+                { value: 'ethics-safety', label: 'Ethics & Safety' },
+                { value: 'equity-social-justice', label: 'Equity & Social Justice' },
+                { value: 'error-hallucination', label: 'Error & Hallucination' },
+                { value: 'evaluation-frameworks', label: 'Evaluation Frameworks' },
+                { value: 'prompt-engineering', label: 'Prompt Engineering' }
+            ],
+            'understanding-users': [
+                { value: 'general', label: 'General' },
+                { value: 'administrators', label: 'Administrators' },
+                { value: 'students', label: 'Students' },
+                { value: 'faculty', label: 'Faculty' }
+            ],
+            'assessing-impacts': [
+                { value: 'impacts-general', label: 'General' },
+                { value: 'learning-outcomes', label: 'Learning Outcomes' },
+                { value: 'equity', label: 'Equity' },
+                { value: 'academic-integrity', label: 'Academic Integrity' }
+            ],
+            'innovating-edtech': [
+                { value: 'edtech-general', label: 'General' },
+                { value: 'intelligent-tutoring', label: 'Intelligent Tutoring' },
+                { value: 'assessment', label: 'Assessment' },
+                { value: 'feedback', label: 'Feedback' }
+            ],
+            'learning-science': [
+                { value: 'learning-general', label: 'General' },
+                { value: 'metacognition', label: 'Metacognition' },
+                { value: 'writing', label: 'Writing' },
+                { value: 'collaboration', label: 'Collaboration' }
+            ],
+            'research-methods': [
+                { value: 'methods-general', label: 'General' },
+                { value: 'measurement', label: 'Measurement' },
+                { value: 'design', label: 'Design' },
+                { value: 'ethics', label: 'Ethics' }
+            ]
+        };
+
+        // Open edit contribution modal
+        async function openEditContribution(contributionId) {
+            try {
+                const db = window.firebaseApp.db;
+                const doc = await db.collection('contributions').doc(contributionId).get();
+
+                if (!doc.exists) {
+                    showNotification('Contribution not found', 'error');
+                    return;
+                }
+
+                const data = doc.data();
+
+                // Store contribution ID
+                document.getElementById('edit-contribution-id').value = contributionId;
+
+                // Populate basic fields
+                document.getElementById('edit-topic').value = data.topic || '';
+                updateEditSubtopicOptions();
+                document.getElementById('edit-subtopic').value = data.subtopic || '';
+                document.getElementById('edit-summary').value = data.summary || '';
+
+                // Populate bibliography fields
+                const bib = data.bibliography || {};
+                document.getElementById('edit-bib-title').value = bib.title || '';
+                document.getElementById('edit-bib-authors').value = bib.authors || '';
+                document.getElementById('edit-bib-year').value = bib.year || '';
+                document.getElementById('edit-bib-url').value = bib.url || '';
+                document.getElementById('edit-bib-pubtype').value = bib.pubType || 'journal';
+
+                // Journal fields
+                document.getElementById('edit-bib-journal').value = bib.journal || '';
+                document.getElementById('edit-bib-volume').value = bib.volume || '';
+                document.getElementById('edit-bib-issue').value = bib.issue || '';
+                document.getElementById('edit-bib-pages').value = bib.pages || '';
+
+                // Book fields
+                document.getElementById('edit-bib-publisher').value = bib.publisher || '';
+                document.getElementById('edit-bib-location').value = bib.location || '';
+
+                // Tags
+                const tags = bib.tags || [];
+                document.getElementById('edit-tags').value = Array.isArray(tags) ? tags.join(', ') : tags;
+
+                // Update visible fields based on pub type
+                updateEditPubTypeFields();
+
+                // Show modal
+                document.getElementById('edit-contribution-modal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading contribution for edit:', error);
+                showNotification('Failed to load contribution', 'error');
+            }
+        }
+
+        // Close edit contribution modal
+        function closeEditContribution() {
+            document.getElementById('edit-contribution-modal').style.display = 'none';
+            document.getElementById('edit-contribution-form').reset();
+        }
+
+        // Update subtopic options based on selected topic
+        function updateEditSubtopicOptions() {
+            const topicSelect = document.getElementById('edit-topic');
+            const subtopicSelect = document.getElementById('edit-subtopic');
+            const selectedTopic = topicSelect.value;
+
+            // Clear existing options
+            subtopicSelect.innerHTML = '<option value="">Select Subtopic</option>';
+
+            if (selectedTopic && subtopicsByTopic[selectedTopic]) {
+                subtopicsByTopic[selectedTopic].forEach(subtopic => {
+                    const option = document.createElement('option');
+                    option.value = subtopic.value;
+                    option.textContent = subtopic.label;
+                    subtopicSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update visible fields based on publication type
+        function updateEditPubTypeFields() {
+            const pubType = document.getElementById('edit-bib-pubtype').value;
+            const journalFields = document.getElementById('edit-journal-fields');
+            const bookFields = document.getElementById('edit-book-fields');
+
+            if (pubType === 'journal') {
+                journalFields.style.display = 'grid';
+                bookFields.style.display = 'none';
+            } else if (pubType === 'book' || pubType === 'chapter') {
+                journalFields.style.display = 'none';
+                bookFields.style.display = 'grid';
+            } else {
+                journalFields.style.display = 'none';
+                bookFields.style.display = 'none';
+            }
+        }
+
+        // Save edited contribution
+        async function saveEditedContribution(event) {
+            event.preventDefault();
+
+            const contributionId = document.getElementById('edit-contribution-id').value;
+
+            try {
+                const db = window.firebaseApp.db;
+
+                // Get form data
+                const topic = document.getElementById('edit-topic').value;
+                const subtopic = document.getElementById('edit-subtopic').value;
+                const summary = document.getElementById('edit-summary').value;
+
+                // Get bibliography data
+                const bibliography = {
+                    title: document.getElementById('edit-bib-title').value,
+                    authors: document.getElementById('edit-bib-authors').value,
+                    year: document.getElementById('edit-bib-year').value,
+                    url: document.getElementById('edit-bib-url').value,
+                    pubType: document.getElementById('edit-bib-pubtype').value,
+                    journal: document.getElementById('edit-bib-journal').value,
+                    volume: document.getElementById('edit-bib-volume').value,
+                    issue: document.getElementById('edit-bib-issue').value,
+                    pages: document.getElementById('edit-bib-pages').value,
+                    publisher: document.getElementById('edit-bib-publisher').value,
+                    location: document.getElementById('edit-bib-location').value,
+                    tags: document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(t => t)
+                };
+
+                // Update contribution in Firestore
+                await db.collection('contributions').doc(contributionId).update({
+                    topic: topic,
+                    subtopic: subtopic,
+                    summary: summary,
+                    bibliography: bibliography,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showNotification('Contribution updated successfully', 'success');
+                closeEditContribution();
+
+                // Reload contributions and refresh page
+                await loadContributions();
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                console.error('Error updating contribution:', error);
+                showNotification('Failed to update contribution: ' + error.message, 'error');
+            }
         }
 
         // Migrate hardcoded HTML entries to Firestore
