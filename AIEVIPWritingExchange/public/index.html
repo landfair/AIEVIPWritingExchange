@@ -531,6 +531,17 @@
             margin: 0 auto;
         }
 
+        .entry-count-badge {
+            display: inline-block;
+            background: #4285f4;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
         .back-button {
             display: none;
         }
@@ -5388,6 +5399,32 @@ It also connects well with several past papers I've found that looks into prompt
             updateEntryCounter();
         }
 
+        function updateEntryCount(pageId) {
+            const page = document.getElementById(pageId);
+            if (!page) return;
+
+            const header = page.querySelector('.topic-page-header');
+            if (!header) return;
+
+            // Count entries in this page
+            const entryCount = page.querySelectorAll('.bib-entry').length;
+
+            // Check if badge already exists
+            let badge = header.querySelector('.entry-count-badge');
+            if (!badge) {
+                // Create badge if it doesn't exist
+                badge = document.createElement('div');
+                badge.className = 'entry-count-badge';
+                header.appendChild(badge);
+            }
+
+            // Update badge text
+            badge.textContent = `${entryCount} ${entryCount === 1 ? 'entry' : 'entries'}`;
+        }
+
+        // Make updateEntryCount globally accessible
+        window.updateEntryCount = updateEntryCount;
+
         function showTopicPage(topicId, skipHistory) {
             navigationState = {
                 currentView: 'topic',
@@ -5426,6 +5463,9 @@ It also connects well with several past papers I've found that looks into prompt
             if (window.entriesIndexAPI && window.entriesIndexAPI.rebuildIndex) {
                 window.entriesIndexAPI.rebuildIndex();
             }
+
+            // Update entry count for this page
+            updateEntryCount(topicId);
 
             updateBreadcrumbs();
             window.scrollTo(0, 0);
@@ -5472,6 +5512,9 @@ It also connects well with several past papers I've found that looks into prompt
 
             // Load contributions from Firestore for this subtopic
             loadContributionsForSubtopic(topicId, subtopicId);
+
+            // Update entry count for this page
+            updateEntryCount(subtopicId);
 
             updateBreadcrumbs();
             window.scrollTo(0, 0);
@@ -6777,6 +6820,9 @@ It also connects well with several past papers I've found that looks into prompt
                 updateEntryCounter();
 
                 console.log(`✓ Loaded ${matchingContributions.length} contributions for ${topicId}/${subtopicId}`);
+
+                // Update entry count after loading contributions
+                updateEntryCount(subtopicId);
             } catch (error) {
                 console.error('Error loading contributions:', error);
             }

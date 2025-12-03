@@ -356,6 +356,15 @@ window.deleteEntryFromPage = async function(entryId) {
       console.log(`Deleted contribution ${firestoreId} from Firestore`);
     }
 
+    // Find the parent page before removing the entry
+    let parentPageId = null;
+    if (entryElement) {
+      const parentPage = entryElement.closest('[id]');
+      if (parentPage) {
+        parentPageId = parentPage.id;
+      }
+    }
+
     // Remove from DOM
     if (entryElement) {
       entryElement.remove();
@@ -364,6 +373,11 @@ window.deleteEntryFromPage = async function(entryId) {
 
     // Rebuild index
     buildEntriesIndex();
+
+    // Update entry count for the parent page
+    if (parentPageId && window.updateEntryCount) {
+      window.updateEntryCount(parentPageId);
+    }
 
     if (window.showNotification) {
       window.showNotification('Entry deleted successfully', 'success');
