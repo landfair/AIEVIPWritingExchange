@@ -3,7 +3,7 @@
 // NOTE: clearChatHistory() is called on sign-out and sign-in to ensure
 // each new session starts with a fresh, empty chat.
 
-const GOOGLE_CLIENT_ID = '65317156873-o4s0gqor74r2nshde0t93jakod1ktutf.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '172636652682-io9g39mrg4kfima34l51276pgrlidv4i.apps.googleusercontent.com';
 const AUTH_STORAGE_KEY = 'ai_vip_auth';
 
 // Auth state
