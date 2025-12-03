@@ -309,12 +309,14 @@ async function loadFirestoreContributions() {
 function createEntryHTML(id, data) {
   const bib = data.bibliography;
   const citation = formatCitation(bib);
+  const isAdmin = window.auth && window.auth.getCurrentUser && window.auth.getCurrentUser()?.role === 'admin';
 
   return `
-    <div class="bib-entry" id="${id}" data-tags="${(bib.tags || []).join(',')}">
+    <div class="bib-entry" id="${id}" data-tags="${(bib.tags || []).join(',')}" data-firestore-id="${id}">
       <div class="bib-citation" data-source-url="${bib.url || ''}" data-source-title="${bib.title}">
         ${citation}
         <span class="collapse-indicator"></span>
+        ${isAdmin ? `<button onclick="deleteEntryFromPage('${id}')" style="float: right; margin-left: 10px; padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" title="Delete this entry"><i class="fas fa-trash"></i></button>` : ''}
       </div>
       <div class="bib-annotation-container" id="${id}-annotation">
         <div class="bib-annotation">
@@ -331,6 +333,52 @@ function createEntryHTML(id, data) {
     </div>
   `;
 }
+
+// Delete entry from page (admin only)
+window.deleteEntryFromPage = async function(entryId) {
+  if (!window.auth || !window.auth.getCurrentUser || window.auth.getCurrentUser()?.role !== 'admin') {
+    alert('Only administrators can delete entries');
+    return;
+  }
+
+  if (!confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
+    return;
+  }
+
+  try {
+    // Check if this is a Firestore contribution
+    const entryElement = document.getElementById(entryId);
+    const firestoreId = entryElement?.getAttribute('data-firestore-id');
+
+    if (firestoreId && window.firebaseApp && window.firebaseApp.db) {
+      // Delete from Firestore
+      await window.firebaseApp.db.collection('contributions').doc(firestoreId).delete();
+      console.log(`Deleted contribution ${firestoreId} from Firestore`);
+    }
+
+    // Remove from DOM
+    if (entryElement) {
+      entryElement.remove();
+      console.log(`Removed entry ${entryId} from DOM`);
+    }
+
+    // Rebuild index
+    buildEntriesIndex();
+
+    if (window.showNotification) {
+      window.showNotification('Entry deleted successfully', 'success');
+    } else {
+      alert('Entry deleted successfully');
+    }
+  } catch (error) {
+    console.error('Error deleting entry:', error);
+    if (window.showNotification) {
+      window.showNotification('Failed to delete entry', 'error');
+    } else {
+      alert('Failed to delete entry: ' + error.message);
+    }
+  }
+};
 
 // Format citation based on publication type
 function formatCitation(bib) {
