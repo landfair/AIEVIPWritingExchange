@@ -6682,9 +6682,8 @@ It also connects well with several past papers I've found that looks into prompt
                 showNotification('Contribution updated successfully', 'success');
                 closeEditContribution();
 
-                // Reload contributions and refresh page
-                await loadContributions();
-                setTimeout(() => window.location.reload(), 1000);
+                // Force hard reload to show updated contribution
+                window.location.reload(true);
             } catch (error) {
                 console.error('Error updating contribution:', error);
                 showNotification('Failed to update contribution: ' + error.message, 'error');
