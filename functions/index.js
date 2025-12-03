@@ -110,6 +110,59 @@ exports.health = functions.https.onRequest((req, res) => {
   });
 });
 
+// Save contribution endpoint - handles new research entry submissions
+exports.saveContribution = functions.https.onCall(async (data, context) => {
+  try {
+    // Verify user is authenticated
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+          "unauthenticated",
+          "User must be authenticated to submit contributions",
+      );
+    }
+
+    // Get user info
+    const userId = context.auth.uid;
+    const userEmail = context.auth.token.email;
+
+    // Validate required fields
+    if (!data.topic || !data.subtopic || !data.bibliography || !data.summary) {
+      throw new functions.https.HttpsError(
+          "invalid-argument",
+          "Missing required fields",
+      );
+    }
+
+    // Create the contribution document
+    const contribution = {
+      ...data,
+      userId: userId,
+      userEmail: userEmail,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      status: "published", // Auto-publish contributions
+    };
+
+    // Save to Firestore
+    const docRef = await admin.firestore()
+        .collection("contributions")
+        .add(contribution);
+
+    return {
+      success: true,
+      contributionId: docRef.id,
+      message: "Contribution submitted successfully",
+    };
+  } catch (error) {
+    console.error("Error saving contribution:", error);
+    throw new functions.https.HttpsError(
+        "internal",
+        "Failed to save contribution",
+        error.message,
+    );
+  }
+});
+
 // API wrapper function to handle routing
 // Note: The chat endpoint is now a callable function (exports.chat)
 // and should be called via Firebase SDK's httpsCallable('chat')
