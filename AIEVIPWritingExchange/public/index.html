@@ -531,17 +531,6 @@
             margin: 0 auto;
         }
 
-        .entry-count-badge {
-            display: inline-block;
-            background: #4285f4;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-top: 12px;
-        }
-
         .back-button {
             display: none;
         }
@@ -4776,12 +4765,16 @@ It also connects well with several past papers I've found that looks into prompt
             updateEntryCounter();
             populateTeamMembersList();
             logDebugInfo();
+            // Initialize entry counts on landing page
+            setTimeout(updateTopicCardCounts, 500);
         });
 
         window.addEventListener('load', function() {
             updateEntryCounter();
             setupImprovedPathwayNavigation();
             initializeHeaderEffects();
+            // Update counts after everything is fully loaded
+            setTimeout(updateTopicCardCounts, 1000);
         });
 
         let navigationState = {
@@ -5399,27 +5392,101 @@ It also connects well with several past papers I've found that looks into prompt
             updateEntryCounter();
         }
 
-        function updateEntryCount(pageId) {
+        // Count entries in a specific page
+        function countEntriesInPage(pageId) {
             const page = document.getElementById(pageId);
-            if (!page) return;
+            if (!page) return 0;
+            return page.querySelectorAll('.bib-entry').length;
+        }
 
-            const header = page.querySelector('.topic-page-header');
-            if (!header) return;
+        // Count all entries across a topic (including all subtopics)
+        function countEntriesInTopic(topicId) {
+            let totalCount = 0;
 
-            // Count entries in this page
-            const entryCount = page.querySelectorAll('.bib-entry').length;
+            // Find the topic page
+            const topicPage = document.getElementById(topicId);
+            if (!topicPage) return 0;
 
-            // Check if badge already exists
-            let badge = header.querySelector('.entry-count-badge');
-            if (!badge) {
-                // Create badge if it doesn't exist
-                badge = document.createElement('div');
-                badge.className = 'entry-count-badge';
-                header.appendChild(badge);
+            // Find all subtopic cards in this topic
+            const subtopicCards = topicPage.querySelectorAll('.subtopic-card[onclick]');
+
+            // Extract subtopic IDs from onclick attributes and count entries
+            subtopicCards.forEach(card => {
+                const onclick = card.getAttribute('onclick');
+                if (!onclick) return;
+
+                const match = onclick.match(/showSubtopicPage\('([^']+)',\s*'([^']+)'\)/);
+                if (match) {
+                    const subtopicId = match[2];
+                    totalCount += countEntriesInPage(subtopicId);
+                }
+            });
+
+            return totalCount;
+        }
+
+        // Update entry counts on landing page topic cards
+        function updateTopicCardCounts() {
+            const topics = [
+                { id: 'evaluating-tools', name: 'Evaluating Tools' },
+                { id: 'understanding-users', name: 'Understanding Users' },
+                { id: 'assessing-impacts', name: 'Assessing Impacts' },
+                { id: 'innovating-edtech', name: 'Innovating EdTech' },
+                { id: 'learning-science', name: 'Learning Science' },
+                { id: 'research-methods', name: 'Research Methods' }
+            ];
+
+            topics.forEach(topic => {
+                const count = countEntriesInTopic(topic.id);
+                // Find the h3 in the category-header and update it
+                const categoryHeaders = document.querySelectorAll('.category-header');
+                categoryHeaders.forEach(header => {
+                    const h3 = header.querySelector('h3');
+                    if (h3 && h3.textContent.includes(topic.name)) {
+                        // Remove any existing count
+                        const cleanName = h3.textContent.replace(/\s*\(\d+\)/, '');
+                        h3.textContent = `${cleanName} (${count})`;
+                    }
+                });
+            });
+        }
+
+        // Update entry counts on subtopic cards
+        function updateSubtopicCardCounts(topicId) {
+            const topicPage = document.getElementById(topicId);
+            if (!topicPage) return;
+
+            const subtopicCards = topicPage.querySelectorAll('.subtopic-card');
+            subtopicCards.forEach(card => {
+                // Extract subtopic ID from onclick attribute
+                const onclick = card.getAttribute('onclick');
+                if (!onclick) return;
+
+                const match = onclick.match(/showSubtopicPage\('([^']+)',\s*'([^']+)'\)/);
+                if (!match) return;
+
+                const subtopicId = match[2];
+                const count = countEntriesInPage(subtopicId);
+
+                // Update the h3 with count
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    // Remove any existing count
+                    const cleanName = h3.textContent.replace(/\s*\(\d+\)/, '');
+                    h3.textContent = `${cleanName} (${count})`;
+                }
+            });
+        }
+
+        // Update all entry counts (call after loading contributions)
+        function updateEntryCount(pageId) {
+            // Update topic cards on landing page
+            updateTopicCardCounts();
+
+            // If we're on a topic page with subtopics, update those counts too
+            if (pageId) {
+                updateSubtopicCardCounts(pageId);
             }
-
-            // Update badge text
-            badge.textContent = `${entryCount} ${entryCount === 1 ? 'entry' : 'entries'}`;
         }
 
         // Make updateEntryCount globally accessible
