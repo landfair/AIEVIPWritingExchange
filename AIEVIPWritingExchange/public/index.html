@@ -1853,7 +1853,34 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
 
     <!-- Firebase Configuration -->
-    <!-- firebase-config is inline in index.html -->
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV9jtApsSFuyZWVoTEnNl9MTOmwun9bmI",
+            authDomain: "saymorehere.firebaseapp.com",
+            projectId: "saymorehere",
+            storageBucket: "saymorehere.firebasestorage.app",
+            messagingSenderId: "172636652682",
+            appId: "1:172636652682:web:e7ae9ee4e7726044fe9973",
+            measurementId: "G-TV09JDHSM0"
+        };
+
+        // Initialize Firebase App
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const functions = firebase.functions();
+
+        // Make Firebase accessible globally
+        window.firebaseApp = {
+            app: app,
+            auth: auth,
+            db: db,
+            functions: functions
+        };
+
+        console.log('✓ Firebase initialized');
+    </script>
 </head>
 <body>
     <header class="fixed-header">
