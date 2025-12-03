@@ -4442,7 +4442,11 @@ It also connects well with several past papers I've found that looks into prompt
                     <button onclick="refreshContributions()" style="padding: 10px 20px; background: #57068c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
+                    <button onclick="migrateHardcodedEntries()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-database"></i> Migrate HTML Entries
+                    </button>
                 </div>
+                <div id="migration-status" style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; display: none;"></div>
                 <div id="contributions-list" style="max-height: 500px; overflow-y: auto;">
                     <p style="text-align: center; color: #666; padding: 20px;">Loading contributions...</p>
                 </div>
@@ -6255,6 +6259,172 @@ It also connects well with several past papers I've found that looks into prompt
         // Refresh contributions list
         function refreshContributions() {
             loadContributions();
+        }
+
+        // Migrate hardcoded HTML entries to Firestore
+        async function migrateHardcodedEntries() {
+            if (!confirm('This will migrate all hardcoded HTML entries to Firestore. Continue?')) {
+                return;
+            }
+
+            const statusDiv = document.getElementById('migration-status');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '<strong>Starting migration...</strong>';
+
+            try {
+                const db = window.firebaseApp.db;
+                const allEntries = document.querySelectorAll('.bib-entry');
+                const totalEntries = allEntries.length;
+                let migratedCount = 0;
+                let skippedCount = 0;
+                let errorCount = 0;
+
+                statusDiv.innerHTML = `<strong>Found ${totalEntries} entries. Starting migration...</strong>`;
+
+                // Process entries in batches
+                for (let i = 0; i < allEntries.length; i++) {
+                    const entry = allEntries[i];
+
+                    // Skip if already has firestore-id (already migrated)
+                    if (entry.hasAttribute('data-firestore-id')) {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    try {
+                        // Extract entry data
+                        const entryId = entry.id;
+                        const citation = entry.querySelector('.bib-citation');
+                        const annotationText = entry.querySelector('.annotation-text');
+                        const authorDiv = entry.querySelector('.annotation-author');
+                        const tags = entry.getAttribute('data-tags') || '';
+
+                        if (!citation || !annotationText) {
+                            console.warn(`Skipping entry ${entryId}: missing required elements`);
+                            skippedCount++;
+                            continue;
+                        }
+
+                        // Extract citation info
+                        const sourceUrl = citation.getAttribute('data-source-url') || '';
+                        const sourceTitle = citation.getAttribute('data-source-title') || '';
+                        const citationText = citation.textContent.replace('▼', '').replace('▲', '').trim();
+
+                        // Parse citation to extract author, year, title
+                        const parsed = parseCitation(citationText);
+
+                        // Extract annotation
+                        const annotationHTML = annotationText.innerHTML;
+                        const authorText = authorDiv ? authorDiv.textContent : '';
+                        const summary = annotationHTML.split('<div class="annotation-author">')[0].trim();
+
+                        // Parse author and date
+                        const authorMatch = authorText.match(/^(.+?)(?:,?\s+(\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2},? \d{4}))?$/);
+                        const authorName = authorMatch ? authorMatch[1].trim() : 'Legacy Entry';
+
+                        // Determine topic from parent element
+                        let topic = 'general';
+                        let subtopic = 'general';
+                        const topicPage = entry.closest('[id*="-"]');
+                        if (topicPage && topicPage.id) {
+                            const parts = topicPage.id.split('-');
+                            if (parts.length >= 2) {
+                                topic = parts[0];
+                                subtopic = topicPage.id;
+                            }
+                        }
+
+                        // Create contribution document
+                        const contributionData = {
+                            topic: topic,
+                            subtopic: subtopic,
+                            bibliography: {
+                                authors: parsed.authors || 'Unknown',
+                                year: parsed.year || new Date().getFullYear(),
+                                title: parsed.title || sourceTitle || 'Untitled',
+                                pubType: 'journal',
+                                url: sourceUrl,
+                                tags: tags.split(',').filter(t => t.trim())
+                            },
+                            summary: summary,
+                            authorName: authorName,
+                            authorEmail: 'migrated@system',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'published',
+                            migratedFrom: 'html',
+                            originalId: entryId
+                        };
+
+                        // Save to Firestore
+                        const docRef = await db.collection('contributions').add(contributionData);
+
+                        // Mark entry as migrated
+                        entry.setAttribute('data-firestore-id', docRef.id);
+
+                        migratedCount++;
+
+                        // Update status every 5 entries
+                        if (migratedCount % 5 === 0) {
+                            statusDiv.innerHTML = `
+                                <strong>Migration Progress:</strong><br>
+                                Migrated: ${migratedCount} / ${totalEntries}<br>
+                                Skipped: ${skippedCount}<br>
+                                Errors: ${errorCount}
+                            `;
+                        }
+                    } catch (error) {
+                        console.error(`Error migrating entry:`, error);
+                        errorCount++;
+                    }
+                }
+
+                statusDiv.innerHTML = `
+                    <strong style="color: #28a745;">✓ Migration Complete!</strong><br>
+                    Migrated: ${migratedCount}<br>
+                    Skipped: ${skippedCount}<br>
+                    Errors: ${errorCount}
+                `;
+
+                showNotification(`Migration complete: ${migratedCount} entries migrated`, 'success');
+
+                // Reload contributions list
+                await loadContributions();
+            } catch (error) {
+                console.error('Migration error:', error);
+                statusDiv.innerHTML = `<strong style="color: #dc3545;">Migration failed: ${error.message}</strong>`;
+                showNotification('Migration failed', 'error');
+            }
+        }
+
+        // Parse citation text to extract structured data
+        function parseCitation(citationText) {
+            const result = {
+                authors: '',
+                year: null,
+                title: ''
+            };
+
+            // Try to extract year (matches 4 digits in parentheses)
+            const yearMatch = citationText.match(/\((\d{4})\)/);
+            if (yearMatch) {
+                result.year = parseInt(yearMatch[1]);
+            }
+
+            // Extract authors (text before year)
+            if (yearMatch) {
+                result.authors = citationText.substring(0, yearMatch.index).trim();
+                // Remove trailing comma or period
+                result.authors = result.authors.replace(/[,.]$/, '').trim();
+            }
+
+            // Extract title (text in quotes after year)
+            const titleMatch = citationText.match(/[""]([^"""]+)[""]/) || citationText.match(/"([^"]+)"/);
+            if (titleMatch) {
+                result.title = titleMatch[1];
+            }
+
+            return result;
         }
 
         // Add search functionality
