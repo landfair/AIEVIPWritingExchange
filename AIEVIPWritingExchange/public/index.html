@@ -5699,6 +5699,17 @@ It also connects well with several past papers I've found that looks into prompt
                 window.entriesIndexAPI.rebuildIndex();
             }
 
+            // Clear any previously loaded Firestore contributions to prevent duplicates on navigation
+            const subtopicElement = document.getElementById(subtopicId);
+            if (subtopicElement) {
+                const bibContainer = subtopicElement.querySelector('.bibliography-container');
+                if (bibContainer) {
+                    // Remove only Firestore contributions (have data-contribution-id)
+                    const firestoreEntries = bibContainer.querySelectorAll('[data-contribution-id]');
+                    firestoreEntries.forEach(entry => entry.remove());
+                }
+            }
+
             // Load contributions from Firestore for this subtopic
             loadContributionsForSubtopic(topicId, subtopicId);
 
