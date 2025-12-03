@@ -187,20 +187,41 @@ function signOut() {
 // Update authentication UI
 function updateAuthUI() {
   const authContainer = document.getElementById('auth-container-dropdown');
+  const menuTrigger = document.getElementById('user-menu-trigger');
+
   if (!authContainer) return;
 
   if (currentUser) {
-    // User is signed in
+    // User is signed in - show user info and sign out
     authContainer.innerHTML = `
+      <div class="dropdown-item" style="padding: 12px; border-bottom: 1px solid #eee; pointer-events: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="${currentUser.picture}" alt="${currentUser.name}" style="width: 40px; height: 40px; border-radius: 50%;">
+          <div style="display: flex; flex-direction: column;">
+            <strong style="color: #2d2d2d;">${currentUser.name}</strong>
+            <small style="color: #666;">${currentUser.email}</small>
+          </div>
+        </div>
+      </div>
       <button class="dropdown-item" onclick="window.signOut(); toggleHeaderMenu();">
         <i class="fas fa-sign-out-alt"></i> Sign Out
       </button>
     `;
+
+    // Update menu trigger to show user's profile picture
+    if (menuTrigger) {
+      menuTrigger.innerHTML = `<img src="${currentUser.picture}" alt="${currentUser.name}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`;
+    }
   } else {
     // User is not signed in - show sign in prompt
     authContainer.innerHTML = `
       <div id="google-signin-button-dropdown" class="dropdown-item" style="padding: 0;"></div>
     `;
+
+    // Reset menu trigger to default user icon
+    if (menuTrigger) {
+      menuTrigger.innerHTML = `<i class="fas fa-user-circle"></i>`;
+    }
 
     // Render Google Sign-In button in dropdown
     setTimeout(() => {
