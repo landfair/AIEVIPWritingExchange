@@ -273,26 +273,19 @@ function updateContributeButton() {
   const contributeBtn = document.querySelector('.contribute-btn');
   const addPerspectiveBtns = document.querySelectorAll('.add-perspective-btn');
 
-  if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'contributor')) {
-    // Admin or Contributor - show and enable contribute features
-    if (contributeBtn) {
-      contributeBtn.style.display = 'block';
-      contributeBtn.disabled = false;
-      contributeBtn.title = 'Add new research entry';
-    }
+  // Hide the contribute button in header (use dropdown menu instead)
+  if (contributeBtn) {
+    contributeBtn.style.display = 'none';
+  }
 
+  if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'contributor')) {
+    // Admin or Contributor - enable contribute features
     addPerspectiveBtns.forEach(btn => {
       btn.style.display = 'inline-block';
       btn.disabled = false;
     });
   } else {
-    // Visitor or not signed in - hide or disable
-    if (contributeBtn) {
-      contributeBtn.style.display = 'block';
-      contributeBtn.disabled = true;
-      contributeBtn.title = 'Sign in to contribute';
-      contributeBtn.innerHTML = '<i class="fas fa-lock"></i> Sign in to Contribute';
-    }
+    // Visitor or not signed in - disable contribute features
 
     addPerspectiveBtns.forEach(btn => {
       btn.style.display = 'inline-block';
